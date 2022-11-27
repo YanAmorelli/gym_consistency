@@ -71,7 +71,6 @@ func (h *Handler) GetDate(c echo.Context) error {
 }
 
 func (h *Handler) StatsOfMonth(c echo.Context) error {
-	// comparason dates not working
 	var stats = new(models.Stats)
 	firstDay, lastDay := getFirstAndLastDayOfMonth()
 	log.Println("Datas", firstDay, lastDay)

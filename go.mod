@@ -3,15 +3,15 @@ module github.com/yanamorelli/gym_consistency
 go 1.17
 
 require (
+	github.com/jackc/pgconn v1.13.0
 	github.com/labstack/echo v3.3.10+incompatible
-	github.com/lib/pq v1.10.2
 	gorm.io/driver/postgres v1.4.5
 	gorm.io/gorm v1.24.1
 )
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.1 // indirect

@@ -5,12 +5,17 @@ import (
 	"os"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/yanamorelli/gym_consistency/database"
 	"github.com/yanamorelli/gym_consistency/handlers"
 )
 
 func main() {
 	e := echo.New()
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*", "*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
 
 	conn := os.Getenv("DBCONN")
 	if conn == "" {
