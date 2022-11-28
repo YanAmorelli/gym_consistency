@@ -52,9 +52,8 @@ func (h *Handler) GetDate(c echo.Context) error {
 		log.Println(err.Error())
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.JSON(http.StatusInternalServerError, models.JsonObj{
-				"error":        err.Error(),
-				"errorMessage": "Não foi registrado se foi para a academia ou não :(!",
+			return c.JSON(http.StatusNoContent, models.JsonObj{
+				"Message": "Record Not Found",
 			})
 		}
 
