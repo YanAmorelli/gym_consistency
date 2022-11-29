@@ -25,7 +25,7 @@ With this informations you can initializate the program.
 > docker volume create volume_name
 
 2. Run container
-> docker run --name postgresql -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=my_password -p 5432:5432 -v "gym_consistency:/var/lib/pgsql/data" -d postgres
+> docker run --name postgresql -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=my_password -p 5432:5432 -v "volume_name:/var/lib/pgsql/data" -d postgres
 
 3. Open the instance of databse and execute the init_script
 
