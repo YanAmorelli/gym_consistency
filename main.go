@@ -4,8 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo-contrib/prometheus"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/yanamorelli/gym_consistency/database"
 	"github.com/yanamorelli/gym_consistency/handlers"
 )
@@ -28,9 +29,13 @@ func main() {
 
 	h := handlers.Handler{DB: db}
 
+	// TODO: Change the routes names, this isn't good
 	e.POST("/", h.WentGym)
 	e.GET("/getDate/:date", h.GetDate)
 	e.GET("/getCurrentMonth", h.StatsOfMonth)
+
+	p := prometheus.NewPrometheus("echo", nil)
+	p.Use(e)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
