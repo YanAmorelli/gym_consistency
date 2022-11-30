@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgconn"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/yanamorelli/gym_consistency/models"
 	"gorm.io/gorm"
 )
