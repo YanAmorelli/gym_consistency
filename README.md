@@ -42,3 +42,6 @@ With this informations you can initializate the program.
 > curl http://localhost:8080/getCurrentMonth
 
 If the output was {"presentDays":0,"missedDays":0} the it's working. 
+
+## Useful articles 
+* [Monitoring golang with prometheus and grafana](https://gabrieltanner.org/blog/collecting-prometheus-metrics-in-golang/)
