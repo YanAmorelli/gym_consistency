@@ -1,14 +1,10 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/yanamorelli/gym_consistency/database"
-	"github.com/yanamorelli/gym_consistency/handlers"
+	"github.com/yanamorelli/gym_consistency/services"
 )
 
 func main() {
@@ -18,21 +14,14 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	conn := os.Getenv("DBCONN")
-	if conn == "" {
-		log.Fatal("There isn't DBCONN variable setted.")
-	}
-	db, err := database.ConnectDatabase(conn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	h := handlers.Handler{DB: db}
+	handler := services.SetupEnviroment()
 
 	// TODO: Change the routes names, this isn't good
-	e.POST("/", h.WentGym)
-	e.GET("/getDate/:date", h.GetDate)
-	e.GET("/getCurrentMonth", h.StatsOfMonth)
+	e.POST("/", handler.WentGym)
+	e.GET("/getDate/:date", handler.GetDate)
+	e.GET("/getCurrentMonth", handler.StatsOfMonth)
+	e.GET("/signinUser", handler.CreateUser)
+	e.POST("/loginUser", handler.LoginUser)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)

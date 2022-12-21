@@ -13,7 +13,8 @@ import (
 )
 
 type Handler struct {
-	DB *gorm.DB
+	DB           *gorm.DB
+	SecretKeyJWT string
 }
 
 var duplicateEntryError = &pgconn.PgError{Code: "23505"}
