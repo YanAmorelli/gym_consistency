@@ -1,0 +1,3 @@
+CREATE DATABASE gym_system;
+
+CREATE EXTENSION pg_crypto;
