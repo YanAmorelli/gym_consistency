@@ -20,7 +20,7 @@ func main() {
 	e.POST("/", handler.WentGym)
 	e.GET("/getDate/:date", handler.GetDate)
 	e.GET("/getCurrentMonth", handler.StatsOfMonth)
-	e.GET("/signinUser", handler.CreateUser)
+	e.GET("/signonUser", handler.CreateUser)
 	e.POST("/loginUser", handler.LoginUser)
 
 	p := prometheus.NewPrometheus("echo", nil)
