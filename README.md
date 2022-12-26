@@ -41,4 +41,7 @@ With this informations you can initializate the program.
 7. Check is it's working
 > curl http://localhost:8080/getCurrentMonth
 
+8. Testing prometheus logs
+> hey -z 5m -q 5 -m GET -H "Accept: text/html" http://172.18.0.1:8080
+
 If the output was {"presentDays":0,"missedDays":0} the it's working. 
