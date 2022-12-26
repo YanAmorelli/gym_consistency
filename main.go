@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/yanamorelli/gym_consistency/services"
+	"github.com/yanamorelli/gym_consistency/setup"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	handler := services.SetupEnviroment()
+	handler := setup.SetupEnviroment()
 
 	// TODO: Change the routes names, this isn't good
 	e.POST("/", handler.WentGym)

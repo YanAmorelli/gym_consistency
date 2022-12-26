@@ -9,8 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/yanamorelli/gym_consistency/models"
 	"github.com/yanamorelli/gym_consistency/models/model_user"
-	"github.com/yanamorelli/gym_consistency/services/jwt_services"
-	"github.com/yanamorelli/gym_consistency/services/validation"
+	"github.com/yanamorelli/gym_consistency/services"
 )
 
 func (h Handler) CreateUser(c echo.Context) error {
@@ -23,7 +22,7 @@ func (h Handler) CreateUser(c echo.Context) error {
 		})
 	}
 
-	validData := validation.ValidateUserData(&user)
+	validData := services.ValidateUserData(&user)
 	if validData != nil {
 		log.Error("error in user validation. Error: ", validData.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -39,7 +38,7 @@ func (h Handler) CreateUser(c echo.Context) error {
 		})
 	}
 
-	token, err := jwt_services.GenerateJWT(h.SecretKeyJWT, models.Claims{
+	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
 		Username: user.Username,
 	})
 
@@ -65,7 +64,7 @@ func (h Handler) LoginUser(c echo.Context) error {
 	}
 	token := c.Request().Header.Get("Token")
 
-	_, err = jwt_services.VerifyJWT(token, h.SecretKeyJWT)
+	_, err = services.VerifyJWT(token, h.SecretKeyJWT)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":  err.Error(),
