@@ -1,35 +1,60 @@
-version: '3.1'
-
+version: "3"
 services:
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3001:3000"
-    volumes:
-      - grafana-storage:/var/lib/grafana
-  docker_gym_consistency:
-    build:
-      context: ./
-      dockerfile: dockerfile
-    container_name: docker_gym_consistency
-    restart: always
-    ports:
-      - '8080:8080'
-  prometheus:
-    image: prom/prometheus:v2.24.0
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
+      # Log level
+      - --log.level=DEBUG
+      # Tell Traefik to discover containers using the Docker API
+      - --providers.docker=true
+      # Enable the Trafik dashboard
+      - --api.debug=true
+      - --api.insecure=true
+      - --api.dashboard=true
+      # Set up LetsEncrypt
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.letsencrypt.acme.email=1404yan@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      # Set up an insecure listener that redirects all traffic to TLS
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      # Set up the TLS configuration for our websecure listener
+      - --entrypoints.websecure.http.tls=true
+      - --entrypoints.websecure.http.tls.certResolver=letsencrypt
+      - --entrypoints.websecure.http.tls.domains[0].main=thefitnessfrequency.online
+      - --entrypoints.websecure.http.tls.domains[0].sans=*.thefitnessfrequency.online
+    environment:
+      - CLOUDFLARE_EMAIL=1404yan@gmail.com
+      - CLOUDFLARE_DNS_API_TOKEN=HP2FlqiMd2C1F01zpRVTsknNuBZpqeMa9zYu7B4Z
     ports:
-      - 9090:9090
-    restart: always
+      - 80:80
+      - 8080:8080
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/traefik/certs:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+      - 'traefik.http.routers.traefik.rule=Host(`thefitnessfrequency.online`)'
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - 'traefik.http.routers.traefik.middlewares=strip'
+      - 'traefik.http.middlewares.strip.stripprefix.prefixes=/traefik'
+#  librespeed:
+ #   image: ghcr.io/linuxserver/librespeed
+  #  container_name: librespeed
+  #  restart: unless-stopped
+  #  ports:
+  #    - 80
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.http.routers.librespeed.rule=Host(`monitor.thefitnessfrequency.online`)"
+  #    - "traefik.http.routers.librespeed.entrypoints=websecure"
+  #    - "traefik.http.routers.librespeed.tls.certresolver=letsencrypt"
 
-volumes:
-  grafana-storage:
-  prometheus_data:
