@@ -13,18 +13,18 @@ ON public.user_info
 FOR EACH ROW
 EXECUTE FUNCTION public.crpt_passwd();
 
-CREATE OR REPLACE FUNCTION login_username(
-	prm_username character varying,
-	prm_passwd text)
-RETURNS TABLE(user_id bigint, 
-              fullname character varying, 
-              email character varying, 
-              username character varying, 
-              passwd text) 
-LANGUAGE 'sql'
-AS $$
-SELECT ui.user_id,ui.fullname,ui.email,ui.username,ui.passwd
-FROM user_info ui
-WHERE ui.username = prm_username AND 
-    (ui.passwd = crypt(prm_passwd, ui.passwd ));
-$$;
+CREATE OR REPLACE FUNCTION login_user(
+	passwd_inform text,
+	passwd_saved text)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE 
+	auth	boolean;
+BEGIN 
+auth:= passwd_saved = crypt(passwd_inform, passwd_saved );
+RETURN auth;
+END;
+$BODY$;
