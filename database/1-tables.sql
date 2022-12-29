@@ -6,7 +6,7 @@ CREATE TABLE user_info (
     email        character varying(100)
 );
 
-CREATE TABLE user_presence (
+CREATE TABLE user_attendance (
 	 presence_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	 dt_presence DATE ,
 	 went_gym    BOOL,
