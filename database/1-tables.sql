@@ -9,7 +9,7 @@ CREATE TABLE user_info (
 CREATE TABLE user_presence (
 	 presence_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	 dt_presence DATE ,
-	 status      BOOL,
+	 went_gym    BOOL,
 	 user_id INT references user_info(user_id)
 );
 
