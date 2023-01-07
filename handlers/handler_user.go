@@ -60,15 +60,6 @@ func (h Handler) LoginUser(c echo.Context) error {
 			"logged": false,
 		})
 	}
-	token := c.Request().Header.Get("Token")
-
-	_, err = services.VerifyJWT(token, h.SecretKeyJWT)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error":  err.Error(),
-			"logged": false,
-		})
-	}
 
 	if user.Password == "" || user.Username == "" {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -77,8 +68,7 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
-	query := fmt.Sprintf("SELECT * FROM user_info where username='%s' AND login_user('%s', '%s')",
-		user.Username, user.Username, user.Password)
+	query := fmt.Sprintf("SELECT * FROM auth_login('%s', '%s')", user.Username, user.Password)
 	var userChecked bool
 
 	if err := h.DB.Table("user_info").Raw(query).Scan(&userChecked).Error; err != nil {
@@ -96,8 +86,13 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
+	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
+		Username: user.Username,
+	})
+
 	return c.JSON(http.StatusOK, models.JsonObj{
 		"logged": true,
+		"token":  token,
 	})
 }
 
