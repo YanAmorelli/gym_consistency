@@ -23,6 +23,7 @@ func main() {
 	e.GET("/signonUser", handler.CreateUser)
 	e.POST("/loginUser", handler.LoginUser)
 	e.POST("/forgetPassword", handler.ForgetPassword)
+	e.POST("/resetPassword", handler.ResetPassword)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)
