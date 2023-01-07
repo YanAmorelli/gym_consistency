@@ -3,10 +3,10 @@ package services
 import (
 	"errors"
 
-	"github.com/yanamorelli/gym_consistency/models/model_user"
+	"github.com/yanamorelli/gym_consistency/models"
 )
 
-func ValidateUserData(user *model_user.User) error {
+func ValidateUserData(user *models.User) error {
 	if user.Username == "" {
 		return errors.New("username not provided")
 	}

@@ -22,6 +22,7 @@ func main() {
 	e.GET("/getCurrentMonth", handler.StatsOfMonth)
 	e.GET("/signonUser", handler.CreateUser)
 	e.POST("/loginUser", handler.LoginUser)
+	e.POST("/forgetPassword", handler.ForgetPassword)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)
