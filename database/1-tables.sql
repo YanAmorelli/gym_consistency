@@ -18,13 +18,14 @@ CREATE TABLE friend_request (
       user_sent         INT,
       user_received     INT,
       request_status    BOOL,
-      dt_sented         timestamptz DEFAULT NOW();
+      dt_sented         timestamptz DEFAULT NOW(),
+      dt_replied        timestamptz
 );
 
 CREATE TABLE user_friendship (
-      person            INT,
+      user              INT,
       friend            INT,
-      PRIMARY KEY (person,friend)
+      PRIMARY KEY (user,friend)
 );
 
 CREATE UNIQUE INDEX dt_attendance_user_id ON user_attendance 
