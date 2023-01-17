@@ -17,14 +17,14 @@ CREATE TABLE friend_request (
       request_id        INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       user_sent         INT,
       user_received     INT,
-      request_status    BOOL,
+      request_status    INT REFERENCES request_types(type_id),
       dt_sented         timestamptz DEFAULT NOW(),
       dt_replied        timestamptz
 );
 
 CREATE TABLE request_types(
       type_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      status_desc       VARCHAR(20)
+      status_desc       CHAR(1)
 );
 
 CREATE TABLE user_friendship (
