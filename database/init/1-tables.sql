@@ -1,5 +1,5 @@
 CREATE TABLE user_info (
-       user_id          BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+       user_id          UUID DEFAULT uuid_generate_v4()PRIMARY KEY,
        fullname         VARCHAR(100),
        username         VARCHAR(30),
        passwd           TEXT,
@@ -10,13 +10,13 @@ CREATE TABLE user_attendance (
 	 attendance_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	 dt_attendance    DATE ,
 	 went_gym         BOOL,
-	 user_id          INT references user_info(user_id)
+	 user_id          UUID references user_info(user_id)
 );
 
 CREATE TABLE friend_request (
       request_id        INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      user_sent         INT,
-      user_received     INT,
+      user_sent         UUID,
+      user_received     UUID,
       request_status    INT REFERENCES request_types(type_id),
       dt_sented         timestamptz DEFAULT NOW(),
       dt_replied        timestamptz
@@ -28,8 +28,8 @@ CREATE TABLE request_types(
 );
 
 CREATE TABLE user_friendship (
-      user              INT,
-      friend            INT,
+      user              UUID,
+      friend            UUID,
       PRIMARY KEY (user,friend)
 );
 
