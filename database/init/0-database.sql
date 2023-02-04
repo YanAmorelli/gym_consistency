@@ -1,3 +1,4 @@
 CREATE DATABASE gym_system;
 
 CREATE EXTENSION pg_crypto;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
