@@ -17,6 +17,7 @@ func main() {
 	handler := setup.SetupEnviroment()
 
 	// TODO: Change the routes names, this isn't good
+	// TODO: Group routes
 	e.POST("/", handler.WentGym)
 	e.GET("/getDate/:date", handler.GetDate)
 	e.GET("/getCurrentMonth", handler.StatsOfMonth)
@@ -24,6 +25,7 @@ func main() {
 	e.POST("/loginUser", handler.LoginUser)
 	e.POST("/forgetPassword", handler.ForgetPassword)
 	e.POST("/resetPassword", handler.ResetPassword)
+	e.POST("/requestFriendship/:requestedUserId", handler.RequestFriendship)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)

@@ -29,8 +29,10 @@ func (h Handler) CreateUser(c echo.Context) error {
 		})
 	}
 
-	if err := h.DB.Table("user_info").Select("fullname", "username", "passwd", "email").
-		Create(user).Error; err != nil {
+	query := fmt.Sprintf("INSERT INTO user_info(fullname, username, passwd, email) "+
+		"VALUES ('%s','%s','%s','%s') RETURNING user_id", user.FullName, user.Username, user.Password, user.Email)
+	var idReturned int
+	if err := h.DB.Raw(query).Scan(&idReturned).Error; err != nil {
 		log.Error("error trying to create new user. Error: ", err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error": err.Error(),
@@ -39,6 +41,7 @@ func (h Handler) CreateUser(c echo.Context) error {
 
 	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
 		Username: user.Username,
+		UserId:   idReturned,
 	})
 
 	if err != nil {
@@ -68,6 +71,7 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
+	// TODO: Pedir alteração função Caio
 	query := fmt.Sprintf("SELECT * FROM auth_login('%s', '%s')", user.Username, user.Password)
 	var userChecked bool
 
@@ -86,8 +90,20 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
+	// TODO: Excluir após alteração Caio
+	if err := h.DB.Table("user_info").Select("user_id").Where("username = ?", user.Username).
+		First(&user).Error; err != nil {
+		log.Error("error getting user data. Error: ", err.Error())
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to get user",
+			"logged":  false,
+		})
+	}
+
 	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
 		Username: user.Username,
+		UserId:   user.Id,
 	})
 
 	return c.JSON(http.StatusOK, models.JsonObj{
