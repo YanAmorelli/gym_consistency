@@ -29,9 +29,11 @@ func (h Handler) CreateUser(c echo.Context) error {
 		})
 	}
 
+	// TODO: Create username validation
+
 	query := fmt.Sprintf("INSERT INTO user_info(fullname, username, passwd, email) "+
 		"VALUES ('%s','%s','%s','%s') RETURNING user_id", user.FullName, user.Username, user.Password, user.Email)
-	var idReturned int
+	var idReturned string
 	if err := h.DB.Raw(query).Scan(&idReturned).Error; err != nil {
 		log.Error("error trying to create new user. Error: ", err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
@@ -73,37 +75,27 @@ func (h Handler) LoginUser(c echo.Context) error {
 
 	// TODO: Pedir alteração função Caio
 	query := fmt.Sprintf("SELECT * FROM auth_login('%s', '%s')", user.Username, user.Password)
-	var userChecked bool
 
-	if err := h.DB.Table("user_info").Raw(query).Scan(&userChecked).Error; err != nil {
+	var userFound models.User
+	if err = h.DB.Table("user_info").Raw(query).Scan(&userFound).Error; err != nil {
 		log.Error("error getting user data. Error: ", err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"error":  err.Error(),
 			"logged": false,
 		})
 	}
-
-	if !userChecked {
+	if userFound.Username == "" {
 		return c.JSON(http.StatusNotFound, models.JsonObj{
 			"error":  "username or password are incorrect",
 			"logged": false,
 		})
 	}
 
-	// TODO: Excluir após alteração Caio
-	if err := h.DB.Table("user_info").Select("user_id").Where("username = ?", user.Username).
-		First(&user).Error; err != nil {
-		log.Error("error getting user data. Error: ", err.Error())
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error":   err.Error(),
-			"message": "error trying to get user",
-			"logged":  false,
-		})
-	}
+	fmt.Println(userFound)
 
 	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
-		Username: user.Username,
-		UserId:   user.Id,
+		Username: userFound.Username,
+		UserId:   userFound.Id,
 	})
 
 	return c.JSON(http.StatusOK, models.JsonObj{
@@ -122,7 +114,7 @@ func (h Handler) ForgetPassword(c echo.Context) error {
 		})
 	}
 
-	query := fmt.Sprintf("SELECT * FROM user_info WHERE username = '%s'", user.Username)
+	query := fmt.Sprintf("SELECT user_id,username, email FROM user_info WHERE username = '%s'", user.Username)
 	err = h.DB.Raw(query).Scan(&user).Error
 	if err != nil {
 		log.Error("error getting user data. Error: ", err.Error())
@@ -134,13 +126,13 @@ func (h Handler) ForgetPassword(c echo.Context) error {
 
 	passwordGenerated := services.GenerateRandomPassword()
 
-	query = fmt.Sprintf("UPDATE user_info SET passwd = '%s' WHERE user_id = %d",
+	query = fmt.Sprintf("UPDATE user_info SET passwd = '%s' WHERE user_id = '%s'",
 		passwordGenerated, user.Id)
 	err = h.DB.Raw(query).Scan(&user).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
-			"message": "error getting user data from database",
+			"message": "error updating user data from database",
 		})
 	}
 
@@ -177,16 +169,16 @@ func (h Handler) ResetPassword(c echo.Context) error {
 	}
 
 	query := fmt.Sprintf("SELECT * FROM auth_login('%s', '%s')", user.Username, user.OldPassword)
-	var userChecked bool
+	var userFound models.User
 
-	if err := h.DB.Table("user_info").Raw(query).Scan(&userChecked).Error; err != nil {
+	if err := h.DB.Table("user_info").Raw(query).Scan(&userFound).Error; err != nil {
 		log.Error("error getting user data. Error: ", err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error": err.Error(),
 		})
 	}
 
-	if !userChecked {
+	if userFound.Username == "" {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"message": "the actual password is different from the given password",
 		})
@@ -194,7 +186,7 @@ func (h Handler) ResetPassword(c echo.Context) error {
 
 	query = fmt.Sprintf("UPDATE user_info SET passwd = '%s' WHERE username = '%s'",
 		user.NewPassword, user.Username)
-	if err := h.DB.Raw(query).Scan(&userChecked).Error; err != nil {
+	if err := h.DB.Raw(query).Scan(&userFound).Error; err != nil {
 		log.Error("error updating user data. Error: ", err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error": err.Error(),

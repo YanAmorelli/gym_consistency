@@ -4,7 +4,7 @@ import "github.com/golang-jwt/jwt/v4"
 
 type Claims struct {
 	Username string `json:"username"`
-	UserId   int    `json:"user_id"`
+	UserId   string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
