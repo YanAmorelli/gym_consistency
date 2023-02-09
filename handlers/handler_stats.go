@@ -12,13 +12,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Handler struct {
-	DB           *gorm.DB
-	SecretKeyJWT string
-	Email        string
-	Password     string
-}
-
 var duplicateEntryError = &pgconn.PgError{Code: "23505"}
 
 func (h *Handler) WentGym(c echo.Context) error {
