@@ -73,7 +73,6 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
-	// TODO: Pedir alteração função Caio
 	query := fmt.Sprintf("SELECT * FROM auth_login('%s', '%s')", user.Username, user.Password)
 
 	var userFound models.User
@@ -84,7 +83,7 @@ func (h Handler) LoginUser(c echo.Context) error {
 			"logged": false,
 		})
 	}
-	if userFound.Username == "" {
+	if userFound.Id == "" {
 		return c.JSON(http.StatusNotFound, models.JsonObj{
 			"error":  "username or password are incorrect",
 			"logged": false,
@@ -178,7 +177,7 @@ func (h Handler) ResetPassword(c echo.Context) error {
 		})
 	}
 
-	if userFound.Username == "" {
+	if userFound.Id == "" {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"message": "the actual password is different from the given password",
 		})
