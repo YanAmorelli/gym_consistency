@@ -28,8 +28,6 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 		})
 	}
 
-	fmt.Println(claims.UserId)
-
 	requestedUserId := c.Param("requestedUserId")
 	var requestFriendship models.RequestFriendship
 
@@ -45,11 +43,11 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 		})
 	}
 
-	if requestFriendship.UserSent != "" {
-		message := fmt.Sprintf("User %s already request friendship to user %s",
-			requestFriendship.UserSent, requestFriendship.UserReceived)
+	if requestFriendship.UserSent == claims.UserId &&
+		requestFriendship.UserReceived == requestedUserId {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"message": message,
+			"message": fmt.Sprintf("User %s already request friendship to user %s",
+				requestFriendship.UserSent, requestFriendship.UserReceived),
 		})
 	}
 

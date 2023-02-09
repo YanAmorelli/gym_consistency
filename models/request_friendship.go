@@ -6,5 +6,5 @@ type RequestFriendship struct {
 	UserReceived       string `json:"user_received" gorm:"column:user_received"`
 	DateSentRequest    string `json:"date_sent_request" gorm:"column:dt_sented"`
 	RepliedRequestDate string `json:"date_replied_request" gorm:"column:dt_replied"`
-	RequestStatus      string `json:"request_status" gorm:"column:request_status"`
+	RequestStatus      int    `json:"request_status" gorm:"column:request_status"`
 }
