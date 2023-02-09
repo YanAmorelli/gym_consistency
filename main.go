@@ -19,7 +19,7 @@ func main() {
 	e.POST("/bookAttendance", handler.WentGym)
 	e.GET("/getDate/:date", handler.GetDate)
 	e.GET("/getCurrentMonth", handler.StatsOfMonth)
-	e.POST("/signonUser", handler.CreateUser)
+	e.POST("/signUpUser", handler.CreateUser)
 	e.POST("/loginUser", handler.LoginUser)
 	e.POST("/forgetPassword", handler.ForgetPassword)
 	e.POST("/resetPassword", handler.ResetPassword)
