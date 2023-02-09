@@ -44,19 +44,38 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 	}
 
 	if requestFriendship.UserSent == claims.UserId &&
-		requestFriendship.UserReceived == requestedUserId {
+		requestFriendship.UserReceived == requestedUserId &&
+		(requestFriendship.RequestStatus == 1 || requestFriendship.RequestStatus == 2) {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"message": fmt.Sprintf("User %s already request friendship to user %s",
 				requestFriendship.UserSent, requestFriendship.UserReceived),
 		})
 	}
 
-	fmt.Println("request friendship", requestFriendship)
+	if requestFriendship.RequestStatus == 3 {
+		err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ?", claims.UserId, requestedUserId).
+			Update("request_status", 1).Error
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, models.JsonObj{
+				"error":   err.Error(),
+				"message": "error trying to update user request",
+			})
+		}
 
-	// Verificar se registro existe ou se status é igual de aceito, caso sim, retorna um erro de que requisiçaõ já foi feita
-	// Salva requisição no banco de dados
-	// Retorna validado
-	return nil
+		return c.JSON(http.StatusOK, nil)
+	}
+
+	query := fmt.Sprintf("INSERT INTO friend_request(user_sent, user_received, request_status) "+
+		"VALUES('%s','%s',%d)", claims.UserId, requestedUserId, 1)
+	err = h.DB.Raw(query).Scan(&requestFriendship).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to create friendship user request",
+		})
+	}
+
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (h Handler) GetFriendshipRequest(c echo.Context) error {
