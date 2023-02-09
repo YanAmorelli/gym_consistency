@@ -90,8 +90,6 @@ func (h Handler) LoginUser(c echo.Context) error {
 		})
 	}
 
-	fmt.Println(userFound)
-
 	token, err := services.GenerateJWT(h.SecretKeyJWT, models.Claims{
 		Username: userFound.Username,
 		UserId:   userFound.Id,
