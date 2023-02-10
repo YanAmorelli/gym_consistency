@@ -24,7 +24,8 @@ CREATE TABLE friend_request (
 
 CREATE TABLE request_types(
       type_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      status_desc       CHAR(1)
+      status_acro       CHAR(1),
+      status_desc       VARCHAR(15)
 );
 
 CREATE TABLE user_friendship (
