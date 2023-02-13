@@ -26,6 +26,7 @@ func main() {
 	e.POST("/requestFriendship/:requestedUserId", handler.RequestFriendship)
 	e.GET("/getUserFriendshipRequests", handler.GetFriendshipRequest)
 	e.POST("/updateFriendshipRequest", handler.UpdateFriendshipRequest)
+	e.DELETE("/removeFriend/:userId", handler.RemoveFriend)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)

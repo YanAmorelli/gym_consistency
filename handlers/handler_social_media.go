@@ -190,9 +190,45 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 }
 
 func (h Handler) RemoveFriend(c echo.Context) error {
-	// Validar token do usuário
-	// Remove usuário amizade dos usuários
-	return nil
+	token := c.Request().Header.Get("token")
+	if token == "" {
+		message := "token not provided"
+		log.Error(message)
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error": message,
+		})
+	}
+	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error in token verification",
+		})
+	}
+
+	userTargetId := c.Param("userId")
+	query := fmt.Sprintf(`DELETE FROM user_friendship WHERE "user"='%s' AND friend='%s' OR 
+	"user"='%s' AND friend='%s'`, claims.UserId, userTargetId, userTargetId, claims.UserId)
+
+	err = h.DB.Raw(query).Scan(nil).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"message": "error trying to delete user",
+			"error":   err.Error(),
+		})
+	}
+
+	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? OR user_sent = ? AND user_received = ?",
+		claims.UserId, userTargetId, userTargetId, claims.UserId).Update("request_status", 3).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to update user request",
+		})
+	}
+
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (h Handler) GetUserFriends(c echo.Context) error {
