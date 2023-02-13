@@ -56,6 +56,7 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 		err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ?", claims.UserId, requestedUserId).
 			Update("request_status", 1).Error
 		if err != nil {
+			log.Error(err.Error())
 			return c.JSON(http.StatusInternalServerError, models.JsonObj{
 				"error":   err.Error(),
 				"message": "error trying to update user request",
@@ -69,6 +70,7 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 		"VALUES('%s','%s',%d)", claims.UserId, requestedUserId, 1)
 	err = h.DB.Raw(query).Scan(&requestFriendship).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to create friendship user request",
@@ -101,6 +103,7 @@ func (h Handler) GetFriendshipRequest(c echo.Context) error {
 	err = h.DB.Table("friend_request").Where("user_received = ? AND request_status = ?",
 		claims.UserId, 1).Find(&requestsFriendship).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to get friendship requests",
@@ -131,6 +134,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 	var requestFriendship models.RequestFriendship
 	err = c.Bind(&requestFriendship)
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"error": err.Error(),
 		})
@@ -140,6 +144,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 	err = h.DB.Table("friend_request").Where("user_received = ? AND user_sent = ?", claims.UserId,
 		requestFriendship.UserSent).First(&checkRequest).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to get user request",
@@ -147,6 +152,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 	}
 
 	if checkRequest.RequestStatus == 2 || checkRequest.RequestStatus == 3 {
+		log.Error("Forbidden request update")
 		return c.JSON(http.StatusForbidden, models.JsonObj{
 			"error":   "Forbidden request update",
 			"message": "Request must be pendent to be accepted ou declined",
@@ -156,6 +162,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? AND request_status=1",
 		requestFriendship.UserSent, claims.UserId).Update("request_status", requestFriendship.RequestStatus).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to update user request",
@@ -170,6 +177,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 		VALUES('%s','%s')`, claims.UserId, requestFriendship.UserSent)
 	err = h.DB.Raw(insertFriendshipUserReceivedToUserSent).Scan(&requestFriendship).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to insert user sent and user received in friendship table",
@@ -180,6 +188,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 		VALUES('%s','%s')`, requestFriendship.UserSent, claims.UserId)
 	err = h.DB.Raw(insertFriendshipUserSentToUserReceived).Scan(&requestFriendship).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to insert user received and user sent in friendship table",
@@ -213,6 +222,7 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 
 	err = h.DB.Raw(query).Scan(nil).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"message": "error trying to delete user",
 			"error":   err.Error(),
@@ -222,6 +232,7 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? OR user_sent = ? AND user_received = ?",
 		claims.UserId, userTargetId, userTargetId, claims.UserId).Update("request_status", 3).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"error":   err.Error(),
 			"message": "error trying to update user request",
@@ -253,6 +264,7 @@ func (h Handler) GetUserFriends(c echo.Context) error {
 
 	err = h.DB.Table("user_friendship").Select("friend").Where(`"user"=?`, claims.UserId).Find(&friends).Error
 	if err != nil {
+		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
 			"message": "error trying to get user data",
 			"error":   err.Error(),
