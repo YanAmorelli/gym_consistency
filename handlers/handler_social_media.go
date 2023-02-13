@@ -111,9 +111,82 @@ func (h Handler) GetFriendshipRequest(c echo.Context) error {
 }
 
 func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
-	// Validar token  do usuário
-	// Atualiza requisição de amizade de acordo com json recebido
-	return nil
+	token := c.Request().Header.Get("token")
+	if token == "" {
+		message := "token not provided"
+		log.Error(message)
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error": message,
+		})
+	}
+	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error in token verification",
+		})
+	}
+
+	var requestFriendship models.RequestFriendship
+	err = c.Bind(&requestFriendship)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error": err.Error(),
+		})
+	}
+
+	var checkRequest models.RequestFriendship
+	err = h.DB.Table("friend_request").Where("user_received = ? AND user_sent = ?", claims.UserId,
+		requestFriendship.UserSent).First(&checkRequest).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to get user request",
+		})
+	}
+
+	if checkRequest.RequestStatus == 2 || checkRequest.RequestStatus == 3 {
+		return c.JSON(http.StatusForbidden, models.JsonObj{
+			"error":   "Forbidden request update",
+			"message": "Request must be pendent to be accepted ou declined",
+		})
+	}
+
+	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? AND request_status=1",
+		requestFriendship.UserSent, claims.UserId).Update("request_status", requestFriendship.RequestStatus).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to update user request",
+		})
+	}
+
+	if requestFriendship.RequestStatus == 3 {
+		return c.JSON(http.StatusOK, nil)
+	}
+
+	insertFriendshipUserReceivedToUserSent := fmt.Sprintf(`INSERT INTO user_friendship("user", friend) 
+		VALUES('%s','%s')`, claims.UserId, requestFriendship.UserSent)
+	err = h.DB.Raw(insertFriendshipUserReceivedToUserSent).Scan(&requestFriendship).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to insert user sent and user received in friendship table",
+		})
+	}
+
+	insertFriendshipUserSentToUserReceived := fmt.Sprintf(`INSERT INTO user_friendship("user", friend)
+		VALUES('%s','%s')`, requestFriendship.UserSent, claims.UserId)
+	err = h.DB.Raw(insertFriendshipUserSentToUserReceived).Scan(&requestFriendship).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to insert user received and user sent in friendship table",
+		})
+	}
+
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (h Handler) RemoveFriend(c echo.Context) error {
