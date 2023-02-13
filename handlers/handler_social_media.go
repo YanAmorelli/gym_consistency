@@ -232,9 +232,34 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 }
 
 func (h Handler) GetUserFriends(c echo.Context) error {
-	// Validar token do usuário
-	// Pegar id do usuário no token
-	// Buscar amigos do usuário
-	// Retornar lista de amigos
-	return nil
+	token := c.Request().Header.Get("token")
+	if token == "" {
+		message := "token not provided"
+		log.Error(message)
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error": message,
+		})
+	}
+	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error in token verification",
+		})
+	}
+
+	var friends []string
+
+	err = h.DB.Table("user_friendship").Select("friend").Where(`"user"=?`, claims.UserId).Find(&friends).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"message": "error trying to get user data",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.JsonObj{
+		"friends": friends,
+	})
 }
