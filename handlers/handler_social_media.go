@@ -79,11 +79,35 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 }
 
 func (h Handler) GetFriendshipRequest(c echo.Context) error {
-	// Validar token do usuário
-	// Receber id do usuário
-	// Buscar requisições pendentes
-	// Retornas requisições do usuário
-	return nil
+	token := c.Request().Header.Get("token")
+	if token == "" {
+		message := "token not provided"
+		log.Error(message)
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error": message,
+		})
+	}
+	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	if err != nil {
+		log.Error(err.Error())
+		return c.JSON(http.StatusBadRequest, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error in token verification",
+		})
+	}
+
+	var requestsFriendship []models.RequestFriendship
+
+	err = h.DB.Table("friend_request").Where("user_received = ? AND request_status = ?",
+		claims.UserId, 1).Find(&requestsFriendship).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.JsonObj{
+			"error":   err.Error(),
+			"message": "error trying to get friendship requests",
+		})
+	}
+
+	return c.JSON(http.StatusOK, requestsFriendship)
 }
 
 func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
