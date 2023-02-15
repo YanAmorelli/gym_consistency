@@ -1,7 +1,7 @@
 CREATE TABLE user_info (
        user_id          UUID DEFAULT uuid_generate_v4()PRIMARY KEY,
        fullname         VARCHAR(100),
-       username         VARCHAR(30) UNIQUE,
+       username         VARCHAR(30) UNIQUE NOT NULL,
        passwd           TEXT,
        email            VARCHAR(100) UNIQUE
 );
