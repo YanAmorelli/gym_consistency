@@ -17,15 +17,7 @@ const (
 )
 
 func (h Handler) RequestFriendship(c echo.Context) error {
-	token := c.Request().Header.Get("token")
-	if token == "" {
-		message := "token not provided"
-		log.Error(message)
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error": message,
-		})
-	}
-	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	claims, err := services.ValidateUserToken(c, h.SecretKeyJWT)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -88,15 +80,7 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 }
 
 func (h Handler) GetFriendshipRequest(c echo.Context) error {
-	token := c.Request().Header.Get("token")
-	if token == "" {
-		message := "token not provided"
-		log.Error(message)
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error": message,
-		})
-	}
-	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	claims, err := services.ValidateUserToken(c, h.SecretKeyJWT)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -121,15 +105,7 @@ func (h Handler) GetFriendshipRequest(c echo.Context) error {
 }
 
 func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
-	token := c.Request().Header.Get("token")
-	if token == "" {
-		message := "token not provided"
-		log.Error(message)
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error": message,
-		})
-	}
-	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	claims, err := services.ValidateUserToken(c, h.SecretKeyJWT)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -208,15 +184,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 }
 
 func (h Handler) RemoveFriend(c echo.Context) error {
-	token := c.Request().Header.Get("token")
-	if token == "" {
-		message := "token not provided"
-		log.Error(message)
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error": message,
-		})
-	}
-	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	claims, err := services.ValidateUserToken(c, h.SecretKeyJWT)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
@@ -252,16 +220,7 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 }
 
 func (h Handler) GetUserFriends(c echo.Context) error {
-
-	token := c.Request().Header.Get("token")
-	if token == "" {
-		message := "token not provided"
-		log.Error(message)
-		return c.JSON(http.StatusBadRequest, models.JsonObj{
-			"error": message,
-		})
-	}
-	claims, err := services.VerifyJWT(token, h.SecretKeyJWT)
+	claims, err := services.ValidateUserToken(c, h.SecretKeyJWT)
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusBadRequest, models.JsonObj{

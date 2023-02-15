@@ -3,6 +3,8 @@ package services
 import (
 	"errors"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 	"github.com/yanamorelli/gym_consistency/models"
 )
 
@@ -32,4 +34,23 @@ func ValidateUserData(user *models.User) error {
 	}
 
 	return nil
+}
+
+func ValidateUserToken(c echo.Context, secretKey string) (models.Claims, error) {
+	token, err := c.Request().Cookie("token")
+	if err != nil {
+		log.Error(err.Error())
+		return models.Claims{}, err
+	}
+	if token.Value == "" {
+		message := "token not provided"
+		log.Error(message)
+		return models.Claims{}, errors.New(message)
+	}
+	claims, err := VerifyJWT(token.Value, secretKey)
+	if err != nil {
+		log.Error(err.Error())
+		return models.Claims{}, err
+	}
+	return *claims, nil
 }
