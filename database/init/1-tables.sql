@@ -1,9 +1,9 @@
 CREATE TABLE user_info (
        user_id          UUID DEFAULT uuid_generate_v4()PRIMARY KEY,
        fullname         VARCHAR(100),
-       username         VARCHAR(30),
+       username         VARCHAR(30) UNIQUE NOT NULL,
        passwd           TEXT,
-       email            VARCHAR(100)
+       email            VARCHAR(100) UNIQUE
 );
 
 CREATE TABLE user_attendance (
@@ -24,7 +24,8 @@ CREATE TABLE friend_request (
 
 CREATE TABLE request_types(
       type_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      status_desc       CHAR(1)
+      status_acro       CHAR(1),
+      status_desc       VARCHAR(15)
 );
 
 CREATE TABLE user_friendship (
