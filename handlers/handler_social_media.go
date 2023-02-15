@@ -59,8 +59,9 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 	}
 
 	if requestFriendship.RequestStatus == DECLINED {
-		err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ?", claims.UserId, requestedUserId).
-			Update("request_status", PENDENT).Error
+		query := fmt.Sprintf(`UPDATE friend_request SET request_status=%d,dt_replied=NULL
+		WHERE user_sent = '%s' AND user_received = '%s'`, PENDENT, claims.UserId, requestedUserId)
+		err = h.DB.Raw(query).Scan(nil).Error
 		if err != nil {
 			log.Error(err.Error())
 			return c.JSON(http.StatusInternalServerError, models.JsonObj{
@@ -165,8 +166,10 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 		})
 	}
 
-	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? AND request_status=1",
-		requestFriendship.UserSent, claims.UserId).Update("request_status", requestFriendship.RequestStatus).Error
+	query := fmt.Sprintf(`UPDATE friend_request SET request_status = %d, dt_replied=now() WHERE
+	user_sent = '%s' AND user_received = '%s' AND request_status=%d`, checkRequest.RequestStatus,
+		requestFriendship.UserSent, claims.UserId, PENDENT)
+	err = h.DB.Raw(query).Scan(nil).Error
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
