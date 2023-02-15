@@ -10,6 +10,12 @@ import (
 	"github.com/yanamorelli/gym_consistency/services"
 )
 
+const (
+	PENDENT = iota + 1
+	ACCEPTED
+	DECLINED
+)
+
 func (h Handler) RequestFriendship(c echo.Context) error {
 	token := c.Request().Header.Get("token")
 	if token == "" {
@@ -45,16 +51,16 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 
 	if requestFriendship.UserSent == claims.UserId &&
 		requestFriendship.UserReceived == requestedUserId &&
-		(requestFriendship.RequestStatus == 1 || requestFriendship.RequestStatus == 2) {
+		(requestFriendship.RequestStatus == PENDENT || requestFriendship.RequestStatus == ACCEPTED) {
 		return c.JSON(http.StatusBadRequest, models.JsonObj{
 			"message": fmt.Sprintf("User %s already request friendship to user %s",
 				requestFriendship.UserSent, requestFriendship.UserReceived),
 		})
 	}
 
-	if requestFriendship.RequestStatus == 3 {
+	if requestFriendship.RequestStatus == DECLINED {
 		err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ?", claims.UserId, requestedUserId).
-			Update("request_status", 1).Error
+			Update("request_status", PENDENT).Error
 		if err != nil {
 			log.Error(err.Error())
 			return c.JSON(http.StatusInternalServerError, models.JsonObj{
@@ -67,7 +73,7 @@ func (h Handler) RequestFriendship(c echo.Context) error {
 	}
 
 	query := fmt.Sprintf("INSERT INTO friend_request(user_sent, user_received, request_status) "+
-		"VALUES('%s','%s',%d)", claims.UserId, requestedUserId, 1)
+		"VALUES('%s','%s',%d)", claims.UserId, requestedUserId, PENDENT)
 	err = h.DB.Raw(query).Scan(&requestFriendship).Error
 	if err != nil {
 		log.Error(err.Error())
@@ -101,7 +107,7 @@ func (h Handler) GetFriendshipRequest(c echo.Context) error {
 	var requestsFriendship []models.RequestFriendship
 
 	err = h.DB.Table("friend_request").Where("user_received = ? AND request_status = ?",
-		claims.UserId, 1).Find(&requestsFriendship).Error
+		claims.UserId, PENDENT).Find(&requestsFriendship).Error
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
@@ -151,7 +157,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 		})
 	}
 
-	if checkRequest.RequestStatus == 2 || checkRequest.RequestStatus == 3 {
+	if checkRequest.RequestStatus == ACCEPTED || checkRequest.RequestStatus == DECLINED {
 		log.Error("Forbidden request update")
 		return c.JSON(http.StatusForbidden, models.JsonObj{
 			"error":   "Forbidden request update",
@@ -169,7 +175,7 @@ func (h Handler) UpdateFriendshipRequest(c echo.Context) error {
 		})
 	}
 
-	if requestFriendship.RequestStatus == 3 {
+	if requestFriendship.RequestStatus == DECLINED {
 		return c.JSON(http.StatusOK, nil)
 	}
 
@@ -230,7 +236,7 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 	}
 
 	err = h.DB.Table("friend_request").Where("user_sent = ? AND user_received = ? OR user_sent = ? AND user_received = ?",
-		claims.UserId, userTargetId, userTargetId, claims.UserId).Update("request_status", 3).Error
+		claims.UserId, userTargetId, userTargetId, claims.UserId).Update("request_status", DECLINED).Error
 	if err != nil {
 		log.Error(err.Error())
 		return c.JSON(http.StatusInternalServerError, models.JsonObj{
@@ -243,6 +249,7 @@ func (h Handler) RemoveFriend(c echo.Context) error {
 }
 
 func (h Handler) GetUserFriends(c echo.Context) error {
+
 	token := c.Request().Header.Get("token")
 	if token == "" {
 		message := "token not provided"
