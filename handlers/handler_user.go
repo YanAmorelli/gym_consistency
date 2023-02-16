@@ -133,7 +133,6 @@ func (h Handler) ForgetPassword(c echo.Context) error {
 		})
 	}
 
-	// TODO: Criar uma variável constante com frase e determinar idioma no futuro
 	body := fmt.Sprintf("Your password was changed to %s", passwordGenerated)
 	err = services.SendEmail(h.Email, h.Password, user.Email, "Forget password", body)
 	if err != nil {

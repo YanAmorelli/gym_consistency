@@ -24,6 +24,10 @@ func main() {
 	e.POST("/forgetPassword", handler.ForgetPassword)
 	e.POST("/resetPassword", handler.ResetPassword)
 	e.POST("/requestFriendship/:requestedUserId", handler.RequestFriendship)
+	e.GET("/getUserFriendshipRequests", handler.GetFriendshipRequest)
+	e.POST("/updateFriendshipRequest", handler.UpdateFriendshipRequest)
+	e.DELETE("/removeFriend/:userId", handler.RemoveFriend)
+	e.GET("/getUserFriends", handler.GetUserFriends)
 
 	p := prometheus.NewPrometheus("echo", nil)
 	p.Use(e)
