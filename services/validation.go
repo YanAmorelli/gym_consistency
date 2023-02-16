@@ -37,7 +37,7 @@ func ValidateUserData(user *models.User) error {
 }
 
 func ValidateUserToken(c echo.Context, secretKey string) (models.Claims, error) {
-	token, err := c.Request().Cookie("token")
+	token, err := c.Request().Cookie("tff_token")
 	if err != nil {
 		log.Error(err.Error())
 		return models.Claims{}, err
