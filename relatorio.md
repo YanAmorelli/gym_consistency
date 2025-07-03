@@ -111,3 +111,5 @@ Este relatório detalha as descobertas de code smells, falhas de segurança e m�
 ---
 
 Este relatório serve como um guia para melhorias no código. Abordar as vulnerabilidades de segurança deve ser a prioridade máxima, seguida pela refatoração para um design mais limpo e manutenível.
+
+**Nota:** Esta seção foi adicionada para criar um commit distinto e permitir a abertura do Pull Request.
