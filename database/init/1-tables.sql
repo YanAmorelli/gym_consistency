@@ -3,7 +3,9 @@ CREATE TABLE user_info (
        fullname         VARCHAR(100),
        username         VARCHAR(30) UNIQUE NOT NULL,
        passwd           TEXT,
-       email            VARCHAR(100) UNIQUE
+       email            VARCHAR(100) UNIQUE,
+       profile_pic      bytea[],
+       changed_passwd   boolean default false
 );
 
 CREATE TABLE user_attendance (
@@ -11,6 +13,12 @@ CREATE TABLE user_attendance (
 	 dt_attendance    DATE ,
 	 went_gym         BOOL,
 	 user_id          UUID references user_info(user_id)
+);
+
+CREATE TABLE request_types(
+      type_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      status_acro       CHAR(1),
+      status_desc       VARCHAR(15)
 );
 
 CREATE TABLE friend_request (
@@ -22,16 +30,11 @@ CREATE TABLE friend_request (
       dt_replied        timestamptz
 );
 
-CREATE TABLE request_types(
-      type_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      status_acro       CHAR(1),
-      status_desc       VARCHAR(15)
-);
 
 CREATE TABLE user_friendship (
-      user              UUID,
+      "user"             UUID,
       friend            UUID,
-      PRIMARY KEY (user,friend)
+      PRIMARY KEY ("user",friend)
 );
 
 CREATE UNIQUE INDEX dt_attendance_user_id ON user_attendance 
